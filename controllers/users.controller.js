@@ -57,11 +57,8 @@ exports.bodyValidatorBG = (req, res, next) => {
 // exports custom request payload validation middleware
 exports.bodyValidator = (req, res, next) => {
   if (
-    typeof req.body.first_name === "undefined" ||
-    typeof req.body.last_name === "undefined" ||
     typeof req.body.username === "undefined" ||
     typeof req.body.password === "undefined" ||
-    typeof req.body.nif === "undefined" ||
     typeof req.body.role === "undefined"
   ) {
     return res.status(400).json({
@@ -69,13 +66,6 @@ exports.bodyValidator = (req, res, next) => {
         "Bad request! Must provide first and last names, usename, password, nif and role",
     });
   } else {
-    var re = new RegExp("^[0-9]{9}$");
-    if (!re.test(req.body.nif)) {
-      return res.status(400).json({
-        error: "Bad request! Year must be 4 digits",
-      });
-    }
-
     if (
       !(
         req.body.role.toLowerCase() === "regular" ||
@@ -201,6 +191,7 @@ exports.findBackground = async (req, res) => {
       where: {
         id_user: req.params.id,
       },
+      order:[["begin_date", "desc"]]
     });
     return res.json(backgrounds_all); //PRINT DATA HERE
 };
@@ -219,12 +210,11 @@ exports.create = async (req, res) => {
 
   let userNew = await users.create({
     username: req.body.username,
-    first_name: req.body.first_name,
-    last_name: req.body.last_name,
+
     email: req.body.email,
     password: bcrypt.hashSync(req.body.password, 10),
     role: req.body.role,
-    nif: req.body.nif,
+
     create_date: Date.now(),
   });
 
@@ -305,6 +295,7 @@ exports.login = async (req, res, next) => {
     );
 
     return res.status(200).json({
+      loggedUserId: user.id_user,
       success: true,
       accessToken: token,
     });
@@ -317,7 +308,7 @@ exports.login = async (req, res, next) => {
     else
       res.status(500).json({
         success: false,
-        msg: err.message || "Some error occurred while creating the tutorial.",
+        msg: err.message || "Some error occurred while creating the user.",
       });
   }
 };
