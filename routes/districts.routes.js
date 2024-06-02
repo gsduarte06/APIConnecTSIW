@@ -7,7 +7,7 @@ const districtsController = require("../controllers/districts.controller");
 const authController = require("../controllers/auth.controller");
 
 router.route("/")
-  .get(authController.tokenVal,districtsController.get)
+  .get(districtsController.get)
 
 router.all("*", (req, res) => {
   res.status(404).json({ message: "Route not found" }); //send a predefined error message

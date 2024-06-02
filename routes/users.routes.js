@@ -14,7 +14,7 @@ router.route("/:id")
   .patch(authController.tokenVal, usersController.update)
 
   router.route("/:id/backgrounds")
-  .get(authController.tokenVal,usersController.findBackground)
+  .get(usersController.findBackground)
   .post(authController.tokenVal,usersController.bodyValidatorBG, usersController.createBG)
 
 router.route("/login")

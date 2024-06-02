@@ -140,11 +140,11 @@ exports.findBackground = async (req, res) => {
     return res.status(400).json({
       error: "User ID must be an intenger",
     });
-    if (req.body.district == true && req.body.positions == true) 
+    if (req.query.district == "true" && req.query.positions == "true") 
         return res.status(400).json({
           error: "Only one body element is allowed",
         });
-    if (req.body.district == true) {
+    if (req.query.district == "true") {
       let user = await users.findByPk(req.params.id);
       if (!user)
         return res.status(404).json({
@@ -154,7 +154,6 @@ exports.findBackground = async (req, res) => {
       const countByDistrict = [];
       const districts = await db.districts.findAll();
       for (let i in districts) {
-        const { start, end } = getPreviousMonthDateRange(req.body.numMonths);
         const filtBackground = await backgrounds.findAll({
           where: {
             id_district: districts[i].id_district,
@@ -165,7 +164,7 @@ exports.findBackground = async (req, res) => {
       }
       return res.json(countByDistrict);
     } 
-    if( req.body.positions == true){
+    if( req.query.positions == "true"){
         console.log("IM HEREEE");
         const data =[]
         const filtBackground = await backgrounds.findAll({attributes: [
