@@ -27,8 +27,11 @@ module.exports = (sequelize, DataTypes) => {
       end_date: {
         type: DataTypes.DATE
       },
-      imagem: {
-        type: DataTypes.BLOB('medium')
+      image: {
+        type: DataTypes.TEXT
+      },
+      cloudinary_id: {
+        type: DataTypes.TEXT
       },
       link: {
         type: DataTypes.STRING

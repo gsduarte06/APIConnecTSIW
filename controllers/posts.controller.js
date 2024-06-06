@@ -8,7 +8,7 @@ const comments = db.comments;
 const users = db.users;
 const likes = db.likes;
 const present_users = db.present_users;
-
+const cloudinary = require("cloudinary").v2;
 function validateDatetime(datetimeStr) {
   var pattern = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
   return pattern.test(datetimeStr);
@@ -20,7 +20,7 @@ exports.bodyValidator = (req, res, next) => {
     typeof req.body.content === "undefined"
   ) {
     return res.status(400).json({
-      error: "Bad request! Must provide first and last Post Type and Content",
+      error: "Bad request! Must provide Post Type and Content",
     });
   } else {
     if (typeof req.body.beginDate != "undefined") {
@@ -158,6 +158,23 @@ exports.create = async (req, res) => {
       msg: "Not a valid post type.",
     });
 
+    if (req.file) {
+      try {
+        if (req.file) {
+          // build a data URI from the file object (it holds the base64 encoded data representing the file)
+          const b64 = Buffer.from(req.file.buffer).toString("base64");
+          let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+          let result = await cloudinary.uploader.upload(dataURI, {
+            resource_type: "auto",
+          });
+          req.body.foto = result.url
+          req.body.cloudinary_id= result.public_id
+        }
+      } catch (error) {
+        console.log(error);
+        throw new Error("Image is not valid");
+      }
+    }
   let postNew = await posts.create({
     id_type_post: req.body.idType,
     content: req.body.content,
@@ -165,7 +182,8 @@ exports.create = async (req, res) => {
     id_district: req.body.district,
     begin_date: req.body.beginDate,
     end_date: req.body.endDate,
-    image: req.body.image,
+    image: req.body.foto,
+    cloudinary_id: req.body.cloudinary_id,
     link: req.body.link,
   });
 

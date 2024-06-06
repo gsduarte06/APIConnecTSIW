@@ -31,7 +31,10 @@ module.exports = (sequelize, DataTypes) => {
           type: DataTypes.TEXT
         },
         foto: {
-            type: DataTypes.BLOB('medium')
+          type: DataTypes.TEXT
+        },
+        cloudinary_id: {
+          type: DataTypes.TEXT
         },
         CV: {
             type: DataTypes.BLOB('medium')

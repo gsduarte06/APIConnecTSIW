@@ -1,9 +1,22 @@
 const express = require("express");
 const router = express.Router();
+require("dotenv").config();
+const multer = require("multer");
+const cloudinary = require("cloudinary").v2;
+// cloudinary configuration
+cloudinary.config({
+  cloud_name: process.env.C_CLOUD_NAME,
+  api_key: process.env.C_API_KEY,
+  api_secret: process.env.C_API_SECRET,
+});
+
+let storage = multer.memoryStorage();
+
+const upload = multer({ storage }).single("image");
 
 
 // import controller middleware
-const usersController = require("../controllers/users.controller");
+const usersController= require("../controllers/users.controller");
 const authController = require("../controllers/auth.controller");
 router.route("/")
   .get(usersController.findAll)
@@ -11,7 +24,7 @@ router.route("/")
   
 router.route("/:id")
   .get(usersController.findOne)
-  .patch(authController.tokenVal, usersController.update)
+  .patch(authController.tokenVal,upload, usersController.update)
 
   router.route("/:id/backgrounds")
   .get(usersController.findBackground)
