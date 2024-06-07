@@ -4,7 +4,7 @@ const users = db.users;
 const backgrounds = db.backgrounds;
 const positions = db.positions;
 const districts = db.districts;
-const { Sequelize, DataTypes, Op, where } = require("sequelize");
+const { Sequelize, DataTypes, Op, where, ValidationError } = require("sequelize");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const moment = require("moment");
@@ -235,6 +235,9 @@ exports.update = async (req, res) => {
     if (req.file) {
       try {
         if (req.file) {
+          if(user.cloudinary_id){
+            await cloudinary.uploader.destroy(user.cloudinary_id);
+          }
           // build a data URI from the file object (it holds the base64 encoded data representing the file)
           const b64 = Buffer.from(req.file.buffer).toString("base64");
           let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
@@ -321,6 +324,7 @@ exports.login = async (req, res, next) => {
       accessToken: token,
     });
   } catch (err) {
+    console.log(ValidationError);
     if (err instanceof ValidationError)
       res.status(400).json({
         success: false,
