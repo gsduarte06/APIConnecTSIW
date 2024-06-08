@@ -51,7 +51,7 @@ exports.update = async(req, res) => {
         success: true, msg: `Background with ID ${req.params.id} was updated successfully`})
     } else {
         return res.status(200).json({
-            success: true, msg: `No updates were made on background with ID ${req.params.idT}.`})
+            success: true, msg: `No updates were made on background with ID ${req.params.id}.`})
     }
     
 

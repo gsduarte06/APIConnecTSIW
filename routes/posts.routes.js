@@ -28,7 +28,7 @@ router.route("/")
 
   router.route("/:id/comments")
   .get(postsController.findComments)
-  .post(authController.tokenVal,postsController.createComment)
+  .post(authController.tokenVal, postsController.createComment)
 
   router.route("/:id/likes")
   .get(postsController.findLikes)

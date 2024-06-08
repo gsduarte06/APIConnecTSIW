@@ -47,7 +47,7 @@ exports.bodyValidatorBG = (req, res, next) => {
     if (!moment(req.body.beginDate, "YYYY-MM-DD", true).isValid()) {
       return res
         .status(400)
-        .json({ error: "Bad request! Year must be 4 digits" });
+        .json({ error: "Bad request! Data must be format YYYY-MM-DD" });
     }
   }
   next();
@@ -62,7 +62,7 @@ exports.bodyValidator = (req, res, next) => {
   ) {
     return res.status(400).json({
       error:
-        "Bad request! Must provide first and last names, usename, password, nif and role",
+        "Bad request! Must provide usename, password and role",
     });
   } else {
     if (
@@ -81,8 +81,8 @@ exports.bodyValidator = (req, res, next) => {
 
 // Display list of all users
 exports.findAll = async (req, res) => {
-  if (typeof req.body.numMonth != "undefined") {
-    if (!parseInt(req.body.numMonth))
+  if (typeof req.query.numMonth != "undefined") {
+    if (!parseInt(req.query.numMonth))
       return res.status(400).json({
         error: "Pls insert a valid number",
       });
@@ -133,21 +133,17 @@ exports.findOne = async (req, res) => {
 
 // Display only 1 user background
 exports.findBackground = async (req, res) => {
-  if (!parseInt(req.params.id))
-    return res.status(400).json({
+  if (!parseInt(req.params.id)){
+      return res.status(400).json({
       error: "User ID must be an intenger",
     });
-  if (req.query.district == "true" && req.query.positions == "true")
+  }
+  if (req.query.district == "true" && req.query.positions == "true"){
     return res.status(400).json({
       error: "Only one body element is allowed",
     });
+  }
   if (req.query.district == "true") {
-    let user = await users.findByPk(req.params.id);
-    if (!user)
-      return res.status(404).json({
-        success: false,
-        msg: "User ID not found.",
-      });
     const countByDistrict = [];
     const districts = await db.districts.findAll();
     for (let i in districts) {
@@ -162,7 +158,6 @@ exports.findBackground = async (req, res) => {
     return res.json(countByDistrict);
   }
   if (req.query.positions == "true") {
-    console.log("IM HEREEE");
     const data = [];
     const filtBackground = await backgrounds.findAll({
       attributes: [

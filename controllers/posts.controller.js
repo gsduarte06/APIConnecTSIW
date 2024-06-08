@@ -171,8 +171,10 @@ exports.create = async (req, res) => {
           req.body.cloudinary_id= result.public_id
         }
       } catch (error) {
-        console.log(error);
-        throw new Error("Image is not valid");
+        return res.status(400).json({
+          success: false,
+          msg: "Image is not valid",
+        });
       }
     }
   let postNew = await posts.create({
@@ -209,6 +211,12 @@ exports.createComment = async (req, res) => {
       success: false,
       msg: "Not a valid User ID.",
     });
+
+    if (typeof req.body.content == "undefined")
+      return res.status(400).json({
+        success: false,
+        msg: "Fill content field",
+      });
 
   let comment = await comments.findOne({
     where: {
