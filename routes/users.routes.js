@@ -25,6 +25,7 @@ router.route("/")
 router.route("/:id")
   .get(usersController.findOne)
   .patch(authController.tokenVal,upload, usersController.update)
+  .delete(authController.tokenVal,authController.isAdmin,usersController.delete)
 
   router.route("/:id/backgrounds")
   .get(usersController.findBackground)

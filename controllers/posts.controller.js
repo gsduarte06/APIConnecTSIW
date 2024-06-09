@@ -77,7 +77,7 @@ exports.bodyValidatorLikes = (req, res, next) => {
 
 // Display list of all posts
 exports.find = async (req, res) => {
-  const posts_all = await posts.findAll();
+  const posts_all = await posts.findAll({order: [['id_post', 'DESC']]});
   res.json(posts_all);
 };
 

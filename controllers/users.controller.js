@@ -219,6 +219,21 @@ exports.create = async (req, res) => {
   return res.status(201).json("User created successfuly");
 };
 
+
+exports.delete = async (req, res) => {
+  if (!parseInt(req.params.id)) {
+    return res.status(400).json({ error: "User ID must be an intenger" });
+  } else {
+    let result = await users.destroy({ where: { id_user: req.params.id } });
+    if (result == 1) {
+      return res.status(200).json(`User with id ${req.params.id} was successfully deleted!`);
+    } 
+      return res.status(404).json({ error: "User ID not found" });
+    
+  }
+};
+
+
 exports.update = async (req, res) => {
   try {
     if (!parseInt(req.params.id))
@@ -226,6 +241,7 @@ exports.update = async (req, res) => {
 
     let user = await users.findByPk(req.params.id);
     if (!user) throw new Error("User ID not found.");
+    console.log(req.body);
     console.log(req.file);
     if (req.file) {
       try {
@@ -247,7 +263,6 @@ exports.update = async (req, res) => {
         throw new Error("Image is not valid");
       }
     }
-    console.log(req.body);
     const updatedRowsCount = await users.update(req.body, {
       where: {
         id_user: req.params.id,
