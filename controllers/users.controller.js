@@ -270,8 +270,8 @@ exports.update = async (req, res) => {
     let user = await users.findByPk(req.params.id);
     if (!user) throw new Error("User ID not found.");
     console.log(req.files);
-    const image = req.files.image[0]
-    const CV = req.files.pdf[0]
+    const image = req.files.image[0] || null
+    const CV = req.files.pdf[0] || null
     if (req.files) {
       try {
         if (image) {
