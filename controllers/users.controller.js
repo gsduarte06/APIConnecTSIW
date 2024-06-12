@@ -102,25 +102,25 @@ exports.findAll = async (req, res) => {
       raw: true
     });
 
-    const months = [];
-    let currentDate = new Date(start);
-    while (currentDate <= end) {
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth() + 1;
-      const monthAcronym = monthAcronyms[month - 1]; // Adjust for zero-based index
-      months.push({ year, month: monthAcronym });
-      currentDate.setMonth(currentDate.getMonth() + 1);
-    }
-
-    // Fill missing months with 0 count
-    const result = months.map(month => {
-      const existingMonth = casesByMonth.find(caseData => caseData.year === month.year && caseData.month === month.month);
-      console.log(month.year.toString().split(""));
-      return {
-        month: month.month + "/"+month.year.toString().slice(-2),
-        case_count: existingMonth ? existingMonth.case_count : 0
-      };
-    });
+     // Generate sequence of months for the given range
+     const months = [];
+     let currentDate = new Date(start);
+     currentDate.setDate(1); // Set date to 1 to avoid month overflow
+     while (currentDate <= end) {
+       const year = currentDate.getFullYear();
+       const month = currentDate.getMonth();
+       months.push({ year, month });
+       currentDate.setMonth(currentDate.getMonth() + 1);
+     }
+ 
+     // Fill missing months with 0 count
+     const result = months.map(month => {
+       const existingMonth = casesByMonth.find(caseData => caseData.year === month.year && caseData.month - 1 === month.month);
+       return {
+         month: monthAcronyms[month.month]+ "/"+month.year.toString().slice(-2),
+         case_count: existingMonth ? existingMonth.case_count : 0
+       };
+     });
 
 
     return res.json(result);
