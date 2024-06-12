@@ -33,11 +33,14 @@ module.exports = (sequelize, DataTypes) => {
         foto: {
           type: DataTypes.TEXT
         },
-        cloudinary_id: {
+        cloudinary_id_foto: {
           type: DataTypes.TEXT
         },
         CV: {
-            type: DataTypes.BLOB('medium')
+          type: DataTypes.TEXT
+        },
+        cloudinary_id_CV: {
+          type: DataTypes.TEXT
         },
         about:{
             type: DataTypes.TEXT

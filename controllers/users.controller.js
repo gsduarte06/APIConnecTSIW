@@ -4,30 +4,27 @@ const users = db.users;
 const backgrounds = db.backgrounds;
 const positions = db.positions;
 const districts = db.districts;
-const { Sequelize, DataTypes, Op, where, ValidationError } = require("sequelize");
+const { Sequelize, DataTypes, Op, where, ValidationError ,fn,col } = require("sequelize");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const moment = require("moment");
 const { JWTconfig } = require("../config/db.config.js");
 require("dotenv").config();
 const cloudinary = require("cloudinary").v2;
-function getPreviousMonthDateRange(numMonth) {
-  const now = new Date();
-  const startOfLastMonth = new Date(now);
-  startOfLastMonth.setMonth(startOfLastMonth.getMonth() - numMonth);
+const dayjs= require("dayjs")
 
-  // Ensure that if moving to the previous month results in an invalid date,
-  // we adjust accordingly (e.g., moving from March 31 to February 31).
-  if (startOfLastMonth.getDate() !== now.getDate()) {
-    startOfLastMonth.setDate(0);
-  }
+const monthAcronyms = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 
-  console.log("Start of last month:", startOfLastMonth);
-  console.log("End of current date:", now);
-
+function getPreviousYearDateRange(years) {
+    // Get today's date
+    let today = new Date();
+    
+    // Calculate the future date
+    let futureDate = dayjs().subtract(1, 'year').toDate();
+    console.log(futureDate);
   return {
-    start: startOfLastMonth,
-    end: now,
+    start: futureDate,
+    end: today,
   };
 }
 
@@ -81,21 +78,52 @@ exports.bodyValidator = (req, res, next) => {
 
 // Display list of all users
 exports.findAll = async (req, res) => {
-  if (typeof req.query.numMonth != "undefined") {
-    if (!parseInt(req.query.numMonth))
+  if (typeof req.query.numYear != "undefined") {
+    if (!parseInt(req.query.numYear))
       return res.status(400).json({
         error: "Pls insert a valid number",
       });
-    const { start, end } = getPreviousMonthDateRange(req.body.numMonth);
-    const filtuser = await users.findAll({
+    const { start, end } = getPreviousYearDateRange(req.body.numYear);
+    const casesByMonth = await users.findAll({
+      attributes: [
+        [fn('YEAR', col('create_date')), 'year'],
+        [fn('MONTH', col('create_date')), 'month'],
+        [fn('COUNT', col('*')), 'case_count']
+      ],
       where: {
         create_date: {
-          [Op.between]: [start, end],
-        },
+          [Op.between]: [start, end]
+        }
       },
+      group: [
+        fn('YEAR', col('create_date')),
+        fn('MONTH', col('create_date'))
+      ],
+      raw: true
     });
 
-    return res.json(filtuser.length);
+    const months = [];
+    let currentDate = new Date(start);
+    while (currentDate <= end) {
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth() + 1;
+      const monthAcronym = monthAcronyms[month - 1]; // Adjust for zero-based index
+      months.push({ year, month: monthAcronym });
+      currentDate.setMonth(currentDate.getMonth() + 1);
+    }
+
+    // Fill missing months with 0 count
+    const result = months.map(month => {
+      const existingMonth = casesByMonth.find(caseData => caseData.year === month.year && caseData.month === month.month);
+      console.log(month.year.toString().split(""));
+      return {
+        month: month.month + "/"+month.year.toString().slice(-2),
+        case_count: existingMonth ? existingMonth.case_count : 0
+      };
+    });
+
+
+    return res.json(result);
   }
   if (Boolean(req.query.xp) == true) {
     const filtuser = await users.findAll({
@@ -161,7 +189,7 @@ exports.findBackground = async (req, res) => {
     const data = [];
     const filtBackground = await backgrounds.findAll({
       attributes: [
-        [Sequelize.fn("DISTINCT", Sequelize.col("id_position")), "id_position"],
+        [fn("DISTINCT", col("id_position")), "id_position"],
       ],
     });
     for (let i in filtBackground) {
@@ -241,26 +269,45 @@ exports.update = async (req, res) => {
 
     let user = await users.findByPk(req.params.id);
     if (!user) throw new Error("User ID not found.");
-    console.log(req.body);
-    console.log(req.file);
-    if (req.file) {
+    console.log(req.files);
+    const image = req.files.image[0]
+    const CV = req.files.pdf[0]
+    if (req.files) {
       try {
-        if (req.file) {
-          if(user.cloudinary_id){
-            await cloudinary.uploader.destroy(user.cloudinary_id);
+        if (image) {
+          if(user.cloudinary_id_foto){
+            await cloudinary.uploader.destroy(user.cloudinary_id_foto);
           }
           // build a data URI from the file object (it holds the base64 encoded data representing the file)
-          const b64 = Buffer.from(req.file.buffer).toString("base64");
-          let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+          const b64 = Buffer.from(image.buffer).toString("base64");
+          let dataURI = "data:" + image.mimetype + ";base64," + b64;
           let result = await cloudinary.uploader.upload(dataURI, {
             resource_type: "auto",
           });
           req.body.foto = result.url
-          req.body.cloudinary_id= result.public_id
+          req.body.cloudinary_id_foto= result.public_id
         }
       } catch (error) {
         console.log(error);
         throw new Error("Image is not valid");
+      }
+      try {
+        if (CV) {
+          if(user.cloudinary_id_CV){
+            await cloudinary.uploader.destroy(user.cloudinary_id_CV);
+          }
+          // build a data URI from the file object (it holds the base64 encoded data representing the file)
+          const b64 = Buffer.from(CV.buffer).toString("base64");
+          let dataURI = "data:" + CV.mimetype + ";base64," + b64;
+          let result = await cloudinary.uploader.upload(dataURI, {
+            resource_type: "auto",
+          });
+          req.body.CV = result.url
+          req.body.cloudinary_id_CV= result.public_id
+        }
+      } catch (error) {
+        console.log(error);
+        throw new Error("CV is not valid");
       }
     }
     const updatedRowsCount = await users.update(req.body, {

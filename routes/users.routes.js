@@ -12,7 +12,7 @@ cloudinary.config({
 
 let storage = multer.memoryStorage();
 
-const upload = multer({ storage }).single("image");
+const upload = multer({ storage }).fields([{name: "image", maxCount:1},{name:"pdf", maxCount:1}]);
 
 
 // import controller middleware
