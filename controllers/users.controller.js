@@ -270,11 +270,10 @@ exports.update = async (req, res) => {
     let user = await users.findByPk(req.params.id);
     if (!user) throw new Error("User ID not found.");
     console.log(req.files);
-    const image = req.files.image[0] || null
-    const CV = req.files.pdf[0] || null
     if (req.files) {
       try {
-        if (image) {
+        if (req.files.image) {
+          const image = req.files.image[0] 
           if(user.cloudinary_id_foto){
             await cloudinary.uploader.destroy(user.cloudinary_id_foto);
           }
@@ -292,7 +291,9 @@ exports.update = async (req, res) => {
         throw new Error("Image is not valid");
       }
       try {
-        if (CV) {
+        console.log(req.files.pdf);
+        if (req.files.pdf) {
+          const CV = req.files.pdf[0] || null
           if(user.cloudinary_id_CV){
             await cloudinary.uploader.destroy(user.cloudinary_id_CV);
           }
