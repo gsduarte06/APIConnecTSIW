@@ -311,6 +311,9 @@ exports.update = async (req, res) => {
         throw new Error("CV is not valid");
       }
     }
+    if(req.body.password){
+      req.body.password = bcrypt.hashSync(req.body.password, 10)
+    }
     const updatedRowsCount = await users.update(req.body, {
       where: {
         id_user: req.params.id,
