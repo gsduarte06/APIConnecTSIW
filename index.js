@@ -4,7 +4,7 @@ require('dotenv').config();
 const cors = require('cors'); 
 
 
-const host = process.env.HOST || '127.0.0.1' ; const port = process.env.PORT || 8080;
+const host = process.env.HOST || '127.0.0.1' ; const port = process.env.PORT || 8090;
 
 app.use(cors()); 
 app.use(express.json()); //enable parsing JSON body data
