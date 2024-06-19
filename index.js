@@ -31,4 +31,4 @@ app.use('/type_posts', require('./routes/type_posts.routes.js'))
 app.all('*', function (req, res) {
 res.status(404).json({ message: 'Resource not found' });
 })
-app.listen(port, host, () => console.log(`App listening at http://${host}:${port}/`));
+app.listen(port, () => console.log(`App listening at http://${host}:${port}/`));
